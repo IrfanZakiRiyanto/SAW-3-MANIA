@@ -16,6 +16,4 @@ frontend/.env
 Thumbs.db
 .DS_Store
 
-# Folder Berkas (File dokumen besar)
-Berkas/
 
