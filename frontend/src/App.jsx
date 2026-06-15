@@ -685,6 +685,214 @@ function App() {
                     <p className="text-xs text-slate-500 mt-0.5">Penelusuran transparan dari data mentah hingga keputusan akhir.</p>
                   </div>
 
+                  {/* Tabel Aturan Konversi Keanggotaan Fuzzy Setiap Kriteria */}
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      Aturan Konversi Keanggotaan Fuzzy Setiap Kriteria
+                    </h4>
+                    <p className="text-[11px] text-slate-500">
+                      Klasifikasi dan konversi nilai riil kriteria laptop ke dalam skala fuzzy [0.25, 0.33, 0.50, 0.67, 0.75, 1.00] sesuai standar regulasi dan preferensi.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      
+                      {/* C1 - TKDN */}
+                      <div className="bg-white border border-brand-border rounded-[16px] overflow-hidden shadow-sm flex flex-col">
+                        <div className="bg-emerald-500 text-white text-[10px] font-bold py-2 px-3 uppercase tracking-wider text-center">
+                          C1 - Nilai TKDN + BMP (%) [BENEFIT]
+                        </div>
+                        <div className="p-3.5 flex-1">
+                          <table className="w-full text-left text-[11px] border-collapse">
+                            <thead>
+                              <tr className="border-b border-brand-border text-slate-400 font-bold">
+                                <th className="pb-2 w-8 text-center">No</th>
+                                <th className="pb-2">Batas Nilai TKDN + BMP</th>
+                                <th className="pb-2 text-center w-20">Nilai Fuzzy</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-brand-border text-slate-700 font-medium">
+                              <tr>
+                                <td className="py-2 text-center font-bold">1</td>
+                                <td className="py-2">TKDN &lt; 45%</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,25</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">2</td>
+                                <td className="py-2">45% &le; TKDN &lt; 50%</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,50</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">3</td>
+                                <td className="py-2">50% &le; TKDN &lt; 55%</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,75</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">4</td>
+                                <td className="py-2">TKDN &ge; 55%</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">1,00</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* C2 - RAM */}
+                      <div className="bg-white border border-brand-border rounded-[16px] overflow-hidden shadow-sm flex flex-col">
+                        <div className="bg-emerald-500 text-white text-[10px] font-bold py-2 px-3 uppercase tracking-wider text-center">
+                          C2 - Kapasitas RAM (GB) [BENEFIT]
+                        </div>
+                        <div className="p-3.5 flex-1">
+                          <table className="w-full text-left text-[11px] border-collapse">
+                            <thead>
+                              <tr className="border-b border-brand-border text-slate-400 font-bold">
+                                <th className="pb-2 w-8 text-center">No</th>
+                                <th className="pb-2">Kapasitas RAM</th>
+                                <th className="pb-2 text-center w-20">Nilai Fuzzy</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-brand-border text-slate-700 font-medium">
+                              <tr>
+                                <td className="py-2 text-center font-bold">1</td>
+                                <td className="py-2">RAM = 8 GB</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,25</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">2</td>
+                                <td className="py-2">RAM = 16 GB</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,50</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">3</td>
+                                <td className="py-2">RAM = 32 GB</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,75</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">4</td>
+                                <td className="py-2">RAM &gt; 32 GB</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">1,00</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* C3 - SSD */}
+                      <div className="bg-white border border-brand-border rounded-[16px] overflow-hidden shadow-sm flex flex-col">
+                        <div className="bg-emerald-500 text-white text-[10px] font-bold py-2 px-3 uppercase tracking-wider text-center">
+                          C3 - Kapasitas SSD (GB) [BENEFIT]
+                        </div>
+                        <div className="p-3.5 flex-1">
+                          <table className="w-full text-left text-[11px] border-collapse">
+                            <thead>
+                              <tr className="border-b border-brand-border text-slate-400 font-bold">
+                                <th className="pb-2 w-8 text-center">No</th>
+                                <th className="pb-2">Kapasitas SSD</th>
+                                <th className="pb-2 text-center w-20">Nilai Fuzzy</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-brand-border text-slate-700 font-medium">
+                              <tr>
+                                <td className="py-2 text-center font-bold">1</td>
+                                <td className="py-2">SSD = 256 GB</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,33</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">2</td>
+                                <td className="py-2">SSD = 512 GB</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,67</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">3</td>
+                                <td className="py-2">SSD &ge; 1024 GB (1 TB)</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">1,00</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* C4 - Garansi */}
+                      <div className="bg-white border border-brand-border rounded-[16px] overflow-hidden shadow-sm flex flex-col">
+                        <div className="bg-emerald-500 text-white text-[10px] font-bold py-2 px-3 uppercase tracking-wider text-center">
+                          C4 - Masa Garansi (Tahun) [BENEFIT]
+                        </div>
+                        <div className="p-3.5 flex-1">
+                          <table className="w-full text-left text-[11px] border-collapse">
+                            <thead>
+                              <tr className="border-b border-brand-border text-slate-400 font-bold">
+                                <th className="pb-2 w-8 text-center">No</th>
+                                <th className="pb-2">Masa Garansi</th>
+                                <th className="pb-2 text-center w-20">Nilai Fuzzy</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-brand-border text-slate-700 font-medium">
+                              <tr>
+                                <td className="py-2 text-center font-bold">1</td>
+                                <td className="py-2">Garansi = 1 Tahun</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,25</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">2</td>
+                                <td className="py-2">Garansi = 2 Tahun</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,50</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">3</td>
+                                <td className="py-2">Garansi = 3 Tahun</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,75</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">4</td>
+                                <td className="py-2">Garansi &gt; 3 Tahun</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">1,00</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* C5 - Harga */}
+                      <div className="bg-white border border-brand-border rounded-[16px] overflow-hidden shadow-sm flex flex-col">
+                        <div className="bg-amber-500 text-white text-[10px] font-bold py-2 px-3 uppercase tracking-wider text-center">
+                          C5 - Harga Satuan (Rp) [COST]
+                        </div>
+                        <div className="p-3.5 flex-1">
+                          <table className="w-full text-left text-[11px] border-collapse">
+                            <thead>
+                              <tr className="border-b border-brand-border text-slate-400 font-bold">
+                                <th className="pb-2 w-8 text-center">No</th>
+                                <th className="pb-2">Batas Harga Satuan</th>
+                                <th className="pb-2 text-center w-20">Nilai Fuzzy</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-brand-border text-slate-700 font-medium">
+                              <tr>
+                                <td className="py-2 text-center font-bold">1</td>
+                                <td className="py-2">Harga &le; Rp 11.000.000</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,25</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">2</td>
+                                <td className="py-2">Rp 11 jt &lt; Harga &le; Rp 14 jt</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,50</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">3</td>
+                                <td className="py-2">Rp 14 jt &lt; Harga &le; Rp 17 jt</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">0,75</td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 text-center font-bold">4</td>
+                                <td className="py-2">Harga &gt; Rp 17.000.000</td>
+                                <td className="py-2 text-center font-bold text-brand-primary">1,00</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
                   {sawData && (
                     <div className="space-y-8">
                       {/* Step 1: Fuzzy Matrix */}

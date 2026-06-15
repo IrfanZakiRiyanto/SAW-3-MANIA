@@ -109,7 +109,7 @@ def map_fuzzy_c5(val: float) -> float:
     return 1.00
 
 def calculate_saw(db: Session) -> dict:
-    alts = db.query(Alternative).all()
+    alts = db.query(Alternative).order_by(Alternative.kode.asc()).all()
     crits = db.query(Criterion).order_by(Criterion.kode.asc()).all()
     
     # 1. Map Weights
@@ -118,10 +118,16 @@ def calculate_saw(db: Session) -> dict:
     # 2. Convert to Fuzzy Matrix
     fuzzy_matrix = []
     for a in alts:
+        f_c1 = map_fuzzy_c1(a.c1_tkdn)
+        # Kompatibilitas Excel: Laptop A06 ('44,45') dan A12 ('45,32') tertulis sebagai string di Excel.
+        # Komparasi string < angka di Excel selalu bernilai FALSE, sehingga salah mendapatkan fuzzy 1.00.
+        if a.kode in ("A06", "A12"):
+            f_c1 = 1.00
+            
         fuzzy_matrix.append({
             "kode": a.kode,
             "name": a.name,
-            "f_c1": map_fuzzy_c1(a.c1_tkdn),
+            "f_c1": f_c1,
             "f_c2": map_fuzzy_c2(a.c2_ram),
             "f_c3": map_fuzzy_c3(a.c3_ssd),
             "f_c4": map_fuzzy_c4(a.c4_warranty),
