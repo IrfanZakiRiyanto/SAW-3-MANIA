@@ -93,6 +93,7 @@ class PreferenceRow(BaseModel):
     brand: str
     v_i: float
     keterangan: str
+    justifikasi: str
 
 class SAWCalculationResult(BaseModel):
     criteria: List[CriterionResponse]

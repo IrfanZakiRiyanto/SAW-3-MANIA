@@ -165,9 +165,8 @@ def get_saw_stats(db: Session = Depends(get_db)):
     for b in brands:
         brand_dist[b] = brand_dist.get(b, 0) + 1
         
-    # Perhitungan SAW untuk cari rekomendasi
     saw_res = crud.calculate_saw(db)
-    recom_count = sum(1 for p in saw_res["preferences"] if p["v_i"] >= 0.8)
+    recom_count = sum(1 for p in saw_res["preferences"] if p["keterangan"] == "REKOMENDASI")
     
     most_expensive = max(alts, key=lambda x: x.c5_price)
     cheapest = min(alts, key=lambda x: x.c5_price)

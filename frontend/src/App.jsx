@@ -6,7 +6,7 @@ import LaptopFormModal from "./components/LaptopFormModal"
 function App() {
   // Authentication & Layout States
   const [currentUser, setCurrentUser] = useState(null)
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
   const [activeTab, setActiveTab] = useState("ranking") // ranking, criteria, crud, saw-steps
   
   // Filtering & Sorting
@@ -272,98 +272,103 @@ function App() {
 
       {/* 1. LEFT SIDEBAR NAVBAR */}
       <aside 
+        onMouseEnter={() => setIsSidebarExpanded(true)}
+        onMouseLeave={() => setIsSidebarExpanded(false)}
         className={`bg-white border-r border-brand-border h-full flex flex-col justify-between transition-all duration-300 ease-in-out z-20 ${
           isSidebarExpanded ? "w-64" : "w-20"
         }`}
       >
         
-        {/* Top: Logo & Toggle Button */}
+        {/* Top: Logo & Navigation */}
         <div>
-          <div className="p-5 flex items-center justify-between border-b border-brand-border min-h-[81px]">
-            {isSidebarExpanded ? (
-              <div className="flex items-center gap-2 overflow-hidden animate-fade-in">
-                <div className="w-2.5 h-6 bg-brand-primary rounded-sm" />
-                <div>
-                  <h1 className="text-xs font-black text-slate-900 tracking-wider">SPK SAW LAPTOP</h1>
-                  <p className="text-[9px] text-slate-400 font-bold tracking-widest uppercase">KEMENDAG RI</p>
-                </div>
+          <div className="px-4 py-5 flex items-center border-b border-brand-border min-h-[81px]">
+            <div className="flex items-center pl-[14px] gap-2 overflow-hidden w-full">
+              <div className="w-2.5 h-6 bg-brand-primary rounded-sm flex-shrink-0" />
+              <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                isSidebarExpanded ? "opacity-100 max-w-[180px] ml-1" : "opacity-0 max-w-0 ml-0"
+              }`}>
+                <h1 className="text-xs font-black text-slate-900 tracking-wider whitespace-nowrap">SPK SAW LAPTOP</h1>
+                <p className="text-[9px] text-slate-400 font-bold tracking-widest uppercase whitespace-nowrap">KEMENDAG RI</p>
               </div>
-            ) : (
-              <div className="mx-auto text-xs font-black text-brand-primary">SPK</div>
-            )}
-            
-            {/* Collapse Toggle Button */}
-            {isSidebarExpanded && (
-              <button 
-                onClick={() => setIsSidebarExpanded(false)}
-                className="text-slate-400 hover:text-brand-primary text-xs font-bold transition-colors"
-                title="Collapse Sidebar"
-              >
-                Tutup
-              </button>
-            )}
+            </div>
           </div>
 
           {/* Menu Navigation */}
           <nav className="p-4 space-y-1.5">
-            
-            {/* Expanded Sidebar expand toggle back */}
-            {!isSidebarExpanded && (
-              <button 
-                onClick={() => setIsSidebarExpanded(true)}
-                className="w-full flex items-center justify-center p-3 text-slate-400 hover:text-brand-primary hover:bg-slate-50 rounded-[12px] transition-all text-xs font-bold border border-transparent hover:border-slate-100"
-                title="Expand Sidebar"
-              >
-                Buka
-              </button>
-            )}
-
             <button 
               onClick={() => setActiveTab("ranking")}
-              className={`w-full flex items-center justify-start p-3 rounded-[12px] font-bold text-xs transition-all ${
+              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all ${
                 activeTab === "ranking" 
                   ? "bg-brand-primary text-white shadow-sm" 
                   : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
               }`}
+              title="Rangking Keputusan"
             >
-              {!isSidebarExpanded && <span className="mx-auto">RANK</span>}
-              {isSidebarExpanded && <span className="animate-fade-in overflow-hidden whitespace-nowrap">Rangking Keputusan</span>}
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isSidebarExpanded ? "opacity-100 max-w-[160px] ml-3" : "opacity-0 max-w-0 ml-0"
+              }`}>
+                Rangking Keputusan
+              </span>
             </button>
 
             <button 
               onClick={() => setActiveTab("criteria")}
-              className={`w-full flex items-center justify-start p-3 rounded-[12px] font-bold text-xs transition-all ${
+              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all ${
                 activeTab === "criteria" 
                   ? "bg-brand-primary text-white shadow-sm" 
                   : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
               }`}
+              title="Atur Bobot"
             >
-              {!isSidebarExpanded && <span className="mx-auto">WGHT</span>}
-              {isSidebarExpanded && <span className="animate-fade-in overflow-hidden whitespace-nowrap">Atur Bobot</span>}
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isSidebarExpanded ? "opacity-100 max-w-[160px] ml-3" : "opacity-0 max-w-0 ml-0"
+              }`}>
+                Atur Bobot
+              </span>
             </button>
 
             <button 
               onClick={() => setActiveTab("crud")}
-              className={`w-full flex items-center justify-start p-3 rounded-[12px] font-bold text-xs transition-all ${
+              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all ${
                 activeTab === "crud" 
                   ? "bg-brand-primary text-white shadow-sm" 
                   : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
               }`}
+              title="Kelola Laptop"
             >
-              {!isSidebarExpanded && <span className="mx-auto">DATA</span>}
-              {isSidebarExpanded && <span className="animate-fade-in overflow-hidden whitespace-nowrap">Kelola Laptop</span>}
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isSidebarExpanded ? "opacity-100 max-w-[160px] ml-3" : "opacity-0 max-w-0 ml-0"
+              }`}>
+                Kelola Laptop
+              </span>
             </button>
 
             <button 
               onClick={() => setActiveTab("saw-steps")}
-              className={`w-full flex items-center justify-start p-3 rounded-[12px] font-bold text-xs transition-all ${
+              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all ${
                 activeTab === "saw-steps" 
                   ? "bg-brand-primary text-white shadow-sm" 
                   : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
               }`}
+              title="Matriks SAW"
             >
-              {!isSidebarExpanded && <span className="mx-auto">MTRX</span>}
-              {isSidebarExpanded && <span className="animate-fade-in overflow-hidden whitespace-nowrap">Matriks SAW</span>}
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isSidebarExpanded ? "opacity-100 max-w-[160px] ml-3" : "opacity-0 max-w-0 ml-0"
+              }`}>
+                Matriks SAW
+              </span>
             </button>
           </nav>
         </div>
@@ -372,36 +377,38 @@ function App() {
         <div className="p-4 border-t border-brand-border">
           <div className="flex flex-col gap-2">
             
-            {isSidebarExpanded ? (
-              <div className="bg-slate-50 border border-brand-border p-3 rounded-[12px] space-y-2 overflow-hidden animate-fade-in">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span className="text-[10px] font-bold text-slate-700 truncate max-w-[120px] uppercase tracking-wider">
-                    Operator: {currentUser.username}
-                  </span>
+            {/* Operator Info Card */}
+            <div className={`bg-slate-50 border border-brand-border rounded-[12px] transition-all duration-300 ease-in-out overflow-hidden ${
+              isSidebarExpanded ? "p-3 opacity-100 max-h-[80px]" : "p-0 opacity-0 max-h-0 border-none"
+            }`}>
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider truncate">
+                  Operator: {currentUser.username}
+                </span>
+              </div>
+              {isSidebarExpanded && (
+                <div className="text-[9px] text-slate-400 font-semibold mt-1">
+                  Koneksi API: {isConnected ? "Aktif" : "Terputus"}
                 </div>
-                <button 
-                  onClick={handleLogout}
-                  className="w-full bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold py-1.5 rounded-lg shadow-sm transition-colors uppercase tracking-wider"
-                >
-                  Keluar
-                </button>
-              </div>
-            ) : (
-              <button 
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center p-3 text-rose-500 hover:bg-rose-50 rounded-[12px] transition-all text-[10px] font-bold"
-                title="Logout"
-              >
-                OUT
-              </button>
-            )}
+              )}
+            </div>
 
-            {isSidebarExpanded && (
-              <div className="text-[9px] text-center text-slate-400 font-semibold mt-1">
-                Koneksi API: {isConnected ? "Aktif" : "Terputus"}
-              </div>
-            )}
+            {/* Logout Button */}
+            <button 
+              onClick={handleLogout}
+              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all duration-300 ease-in-out text-rose-500 hover:bg-rose-50`}
+              title="Keluar"
+            >
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isSidebarExpanded ? "opacity-100 max-w-[100px] ml-3" : "opacity-0 max-w-0 ml-0"
+              }`}>
+                Keluar
+              </span>
+            </button>
 
           </div>
         </div>
@@ -443,7 +450,7 @@ function App() {
                 <div className="bg-white border border-brand-border rounded-[20px] p-6 shadow-sm">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rekomendasi</p>
                   <h4 className="text-3xl font-black text-slate-900 mt-1">{stats.recommended_count}</h4>
-                  <p className="text-[9px] text-emerald-600 mt-1 font-bold">Skor V_i {">="} 0.8000</p>
+                  <p className="text-[9px] text-emerald-600 mt-1 font-bold">Alternatif Teratas</p>
                 </div>
 
                 <div className="bg-white border border-brand-border rounded-[20px] p-6 shadow-sm">
@@ -522,17 +529,27 @@ function App() {
                                 {item.rank}
                               </td>
                               <td className="p-3.5 text-center font-mono text-slate-400 font-semibold">{item.kode}</td>
-                              <td className="p-3.5 font-semibold text-slate-900">{item.name}</td>
+                              <td className="p-3.5">
+                                <div className="font-semibold text-slate-900">{item.name}</div>
+                                {item.justifikasi && (
+                                  <div className="text-[10px] text-slate-400 font-semibold mt-0.5 italic flex items-center gap-1.5">
+                                    <svg className="w-3 h-3 text-brand-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>{item.justifikasi}</span>
+                                  </div>
+                                )}
+                              </td>
                               <td className="p-3.5 text-slate-500 font-semibold">{item.brand}</td>
                               <td className="p-3.5 text-center font-bold text-brand-primary">{item.v_i.toFixed(4)}</td>
                               <td className="p-3.5 text-center">
-                                {item.v_i >= 0.8 ? (
+                                {item.keterangan === "REKOMENDASI" ? (
                                   <span className="bg-emerald-50 border border-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded text-[10px] uppercase tracking-wider">
                                     Sangat Layak
                                   </span>
                                 ) : (
                                   <span className="bg-slate-100 border border-slate-200 text-slate-500 font-semibold px-2.5 py-1 rounded text-[10px] uppercase tracking-wider">
-                                    Tidak Direkomendasikan
+                                    Cukup Layak
                                   </span>
                                 )}
                               </td>

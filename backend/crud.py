@@ -165,23 +165,49 @@ def calculate_saw(db: Session) -> dict:
         )
         v_i = round(v_i, 4) # round to 4 decimal places to match Excel
         
-        # Keterangan
-        keterangan = "REKOMENDASI" if v_i >= 0.8 else "TIDAK DIREKOMENDASIKAN"
+        # Generate justification based on normalized strengths
+        strengths = []
+        if r["r_c1"] >= 0.7: strengths.append("nilai TKDN sangat tinggi")
+        if r["r_c2"] >= 0.7: strengths.append("RAM berkapasitas besar")
+        if r["r_c3"] >= 0.7: strengths.append("penyimpanan SSD sangat lega")
+        if r["r_c4"] >= 0.7: strengths.append("masa garansi panjang")
+        if r["r_c5"] >= 0.7: strengths.append("harga sangat ekonomis")
         
+        # Fallback if no criteria >= 0.7: take the top 2 highest normalized criteria
+        if not strengths:
+            crit_scores = [
+                ("nilai TKDN", r["r_c1"]),
+                ("RAM", r["r_c2"]),
+                ("penyimpanan SSD", r["r_c3"]),
+                ("garansi", r["r_c4"]),
+                ("harga", r["r_c5"])
+            ]
+            crit_scores.sort(key=lambda x: -x[1])
+            strengths.append(crit_scores[0][0])
+            strengths.append(crit_scores[1][0])
+            
+        if len(strengths) == 1:
+            justifikasi = f"Unggul pada aspek {strengths[0]}."
+        elif len(strengths) == 2:
+            justifikasi = f"Unggul pada aspek {strengths[0]} dan {strengths[1]}."
+        else:
+            justifikasi = f"Unggul pada aspek {', '.join(strengths[:-1])}, serta {strengths[-1]}."
+
         preferences.append({
             "kode": r["kode"],
             "name": r["name"],
             "brand": alt_raw.brand,
             "v_i": v_i,
-            "keterangan": keterangan
+            "justifikasi": justifikasi
         })
         
     # Sort preferences by V_i descending, then by kode ascending
     preferences.sort(key=lambda x: (-x["v_i"], x["kode"]))
     
-    # Assign Rank numbers (with unique ranking like in Excel countif)
+    # Assign Rank numbers (with unique ranking like in Excel countif) and Keterangan
     for rank_idx, pref in enumerate(preferences, 1):
         pref["rank"] = rank_idx
+        pref["keterangan"] = "REKOMENDASI" if rank_idx <= 10 else "TIDAK DIREKOMENDASIKAN"
         
     return {
         "criteria": crits,
