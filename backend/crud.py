@@ -204,10 +204,19 @@ def calculate_saw(db: Session) -> dict:
     # Sort preferences by V_i descending, then by kode ascending
     preferences.sort(key=lambda x: (-x["v_i"], x["kode"]))
     
+    n_total = len(preferences)
+    sangat_layak_limit = max(1, round(n_total * 0.15))
+    kurang_layak_limit = n_total - max(1, round(n_total * 0.15))
+    
     # Assign Rank numbers (with unique ranking like in Excel countif) and Keterangan
     for rank_idx, pref in enumerate(preferences, 1):
         pref["rank"] = rank_idx
-        pref["keterangan"] = "REKOMENDASI" if rank_idx <= 10 else "TIDAK DIREKOMENDASIKAN"
+        if rank_idx <= sangat_layak_limit:
+            pref["keterangan"] = "SANGAT LAYAK"
+        elif rank_idx > kurang_layak_limit:
+            pref["keterangan"] = "KURANG LAYAK"
+        else:
+            pref["keterangan"] = "CUKUP LAYAK"
         
     return {
         "criteria": crits,
