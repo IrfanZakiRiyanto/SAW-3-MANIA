@@ -14,12 +14,12 @@ function App() {
     }
   })
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
-  const [activeTab, setActiveTab] = useState("ranking") // ranking, criteria, crud, saw-steps
-  
+  const [activeTab, setActiveTab] = useState("ranking") // ranking, criteria, crud
+
   // Filtering & Sorting
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("vi_desc") // vi_desc, price_asc, price_desc, ram_desc, tkdn_desc
-  
+
   // Toast Notification State
   const [toast, setToast] = useState({ show: false, message: "", type: "success" })
 
@@ -37,7 +37,6 @@ function App() {
   const [editingId, setEditingId] = useState(null)
   const [selectedLaptop, setSelectedLaptop] = useState(null)
   const [crudError, setCrudError] = useState("")
-  const [sawPage, setSawPage] = useState(1)
   // Justification Popup State
   const [justificationModal, setJustificationModal] = useState({ open: false, laptop: null })
 
@@ -78,7 +77,7 @@ function App() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true)
-      
+
       // Fetch Stats
       const resStats = await fetch(`${API_URL}/saw/stats`)
       if (!resStats.ok) throw new Error("Gagal mengambil data statistik")
@@ -158,17 +157,17 @@ function App() {
 
     const sum = Object.values(current).reduce((a, b) => a + b, 0)
     if (sum === 0) return
-    
+
     const newWeights = {}
     let roundedSum = 0
-    
+
     Object.keys(current).forEach(kode => {
       const val = current[kode]
       const scaled = Math.round((val / sum) * 20) / 20 // round to nearest 0.05
       newWeights[kode] = scaled
       roundedSum += scaled
     })
-    
+
     // Adjust difference to enforce exactly 1.0 (100%)
     let diff = 1.0 - roundedSum
     diff = Math.round(diff * 20) / 20
@@ -176,7 +175,7 @@ function App() {
       const keys = Object.keys(current)
       newWeights[keys[0]] = Math.max(0, Math.min(1, newWeights[keys[0]] + diff))
     }
-    
+
     setTempWeights(newWeights)
     showToast("Bobot berhasil dinormalisasi otomatis ke 100%", "info")
   }
@@ -192,7 +191,7 @@ function App() {
           body: JSON.stringify({ weight })
         })
       })
-      
+
       await Promise.all(promises)
       await fetchData()
       showToast("Semua bobot kriteria berhasil diperbarui di database!", "success")
@@ -206,7 +205,7 @@ function App() {
   // Handle CRUD Laptop Submit
   const handleLaptopSubmit = async (formData) => {
     setCrudError("")
-    
+
     // Validasi kode laptop (harus unik jika create)
     if (crudMode === "create") {
       const codeExists = alternatives.some(a => a.kode.toLowerCase() === formData.kode.toLowerCase())
@@ -218,8 +217,8 @@ function App() {
 
     try {
       const method = crudMode === "create" ? "POST" : "PUT"
-      const url = crudMode === "create" 
-        ? `${API_URL}/alternatives` 
+      const url = crudMode === "create"
+        ? `${API_URL}/alternatives`
         : `${API_URL}/alternatives/${editingId}`
 
       const res = await fetch(url, {
@@ -291,43 +290,34 @@ function App() {
   // Filter and Sort rankings dynamically
   const filteredAndSortedRankings = sawData?.preferences
     ? [...sawData.preferences]
-        .filter(item => 
-          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.kode.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .sort((a, b) => {
-          if (sortBy === "vi_desc") return b.v_i - a.v_i
-          
-          const altA = alternatives.find(alt => alt.kode === a.kode)
-          const altB = alternatives.find(alt => alt.kode === b.kode)
-          
-          if (!altA || !altB) return 0
-          
-          if (sortBy === "price_asc") return altA.c5_price - altB.c5_price
-          if (sortBy === "price_desc") return altB.c5_price - altA.c5_price
-          if (sortBy === "ram_desc") return altB.c2_ram - altA.c2_ram
-          if (sortBy === "tkdn_desc") return altB.c1_tkdn - altA.c1_tkdn
-          return 0
-        })
+      .filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.kode.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .sort((a, b) => {
+        if (sortBy === "vi_desc") return b.v_i - a.v_i
+
+        const altA = alternatives.find(alt => alt.kode === a.kode)
+        const altB = alternatives.find(alt => alt.kode === b.kode)
+
+        if (!altA || !altB) return 0
+
+        if (sortBy === "price_asc") return altA.c5_price - altB.c5_price
+        if (sortBy === "price_desc") return altB.c5_price - altA.c5_price
+        if (sortBy === "ram_desc") return altB.c2_ram - altA.c2_ram
+        if (sortBy === "tkdn_desc") return altB.c1_tkdn - altA.c1_tkdn
+        return 0
+      })
     : []
 
-  // Pagination for Matriks SAW steps (Langkah 1 & 2)
-  const itemsPerPage = 15
-  const totalSawPages = sawData ? Math.ceil(sawData.fuzzy_matrix.length / itemsPerPage) : 1
-  const currentSawPage = Math.min(sawPage, totalSawPages) || 1
-  const paginatedFuzzyMatrix = sawData
-    ? sawData.fuzzy_matrix.slice((currentSawPage - 1) * itemsPerPage, currentSawPage * itemsPerPage)
-    : []
-  const paginatedNormalizedMatrix = sawData
-    ? sawData.normalized_matrix.slice((currentSawPage - 1) * itemsPerPage, currentSawPage * itemsPerPage)
-    : []
+
 
   // Total contribution percentage calculation for localWeights
   const tempTotalPercentage = criteria.length > 0
     ? Math.round(Object.keys(tempWeights).length > 0
-        ? Object.values(tempWeights).reduce((sum, w) => sum + w, 0) * 100
-        : criteria.reduce((sum, c) => sum + c.weight, 0) * 100)
+      ? Object.values(tempWeights).reduce((sum, w) => sum + w, 0) * 100
+      : criteria.reduce((sum, c) => sum + c.weight, 0) * 100)
     : 0
 
   // RENDER LOGIN SCREEN IF NOT AUTHENTICATED
@@ -335,13 +325,13 @@ function App() {
     return (
       <>
         {toast.show && (
-          <Toast 
-            message={toast.message} 
-            type={toast.type} 
-            onClose={() => setToast({ ...toast, show: false })} 
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast({ ...toast, show: false })}
           />
         )}
-        <AuthScreen 
+        <AuthScreen
           onLoginSuccess={handleLoginSuccess}
           showToast={showToast}
           API_URL={API_URL}
@@ -352,33 +342,31 @@ function App() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-brand-bg font-sans">
-      
+
       {/* Toast Notification Container */}
       {toast.show && (
-        <Toast 
-          message={toast.message} 
-          type={toast.type} 
-          onClose={() => setToast({ ...toast, show: false })} 
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
         />
       )}
 
       {/* 1. LEFT SIDEBAR NAVBAR */}
-      <aside 
+      <aside
         onMouseEnter={() => setIsSidebarExpanded(true)}
         onMouseLeave={() => setIsSidebarExpanded(false)}
-        className={`bg-white border-r border-brand-border h-full flex flex-col justify-between transition-all duration-300 ease-in-out z-20 ${
-          isSidebarExpanded ? "w-64" : "w-20"
-        }`}
+        className={`bg-white border-r border-brand-border h-full flex flex-col justify-between transition-all duration-300 ease-in-out z-20 ${isSidebarExpanded ? "w-64" : "w-20"
+          }`}
       >
-        
+
         {/* Top: Logo & Navigation */}
         <div>
           <div className="px-4 py-5 flex items-center border-b border-brand-border min-h-[81px]">
             <div className="flex items-center pl-[14px] gap-2 overflow-hidden w-full">
               <div className="w-2.5 h-6 bg-brand-primary rounded-sm flex-shrink-0" />
-              <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                isSidebarExpanded ? "opacity-100 max-w-[180px] ml-1" : "opacity-0 max-w-0 ml-0"
-              }`}>
+              <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isSidebarExpanded ? "opacity-100 max-w-[180px] ml-1" : "opacity-0 max-w-0 ml-0"
+                }`}>
                 <h1 className="text-xs font-black text-slate-900 tracking-wider whitespace-nowrap">SPK SAW LAPTOP</h1>
                 <p className="text-[9px] text-slate-400 font-bold tracking-widest uppercase whitespace-nowrap">KEMENDAG RI</p>
               </div>
@@ -387,92 +375,67 @@ function App() {
 
           {/* Menu Navigation */}
           <nav className="p-4 space-y-1.5">
-            <button 
+            <button
               onClick={() => setActiveTab("ranking")}
-              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all ${
-                activeTab === "ranking" 
-                  ? "bg-brand-primary text-white shadow-sm" 
-                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-              }`}
+              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all ${activeTab === "ranking"
+                ? "bg-brand-primary text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                }`}
               title="Rangking Keputusan"
             >
               <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isSidebarExpanded ? "opacity-100 max-w-[160px] ml-3" : "opacity-0 max-w-0 ml-0"
-              }`}>
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${isSidebarExpanded ? "opacity-100 max-w-[160px] ml-3" : "opacity-0 max-w-0 ml-0"
+                }`}>
                 Rangking Keputusan
               </span>
             </button>
 
-            <button 
+            <button
               onClick={() => setActiveTab("criteria")}
-              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all ${
-                activeTab === "criteria" 
-                  ? "bg-brand-primary text-white shadow-sm" 
-                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-              }`}
+              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all ${activeTab === "criteria"
+                ? "bg-brand-primary text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                }`}
               title="Atur Bobot"
             >
               <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
               </svg>
-              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isSidebarExpanded ? "opacity-100 max-w-[160px] ml-3" : "opacity-0 max-w-0 ml-0"
-              }`}>
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${isSidebarExpanded ? "opacity-100 max-w-[160px] ml-3" : "opacity-0 max-w-0 ml-0"
+                }`}>
                 Atur Bobot
               </span>
             </button>
 
-            <button 
+            <button
               onClick={() => setActiveTab("crud")}
-              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all ${
-                activeTab === "crud" 
-                  ? "bg-brand-primary text-white shadow-sm" 
-                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-              }`}
+              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all ${activeTab === "crud"
+                ? "bg-brand-primary text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                }`}
               title="Kelola Laptop"
             >
               <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isSidebarExpanded ? "opacity-100 max-w-[160px] ml-3" : "opacity-0 max-w-0 ml-0"
-              }`}>
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${isSidebarExpanded ? "opacity-100 max-w-[160px] ml-3" : "opacity-0 max-w-0 ml-0"
+                }`}>
                 Kelola Laptop
               </span>
             </button>
 
-            <button 
-              onClick={() => setActiveTab("saw-steps")}
-              className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all ${
-                activeTab === "saw-steps" 
-                  ? "bg-brand-primary text-white shadow-sm" 
-                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-              }`}
-              title="Matriks SAW"
-            >
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isSidebarExpanded ? "opacity-100 max-w-[160px] ml-3" : "opacity-0 max-w-0 ml-0"
-              }`}>
-                Matriks SAW
-              </span>
-            </button>
           </nav>
         </div>
 
         {/* Bottom: Profile & Logout */}
         <div className="p-4 border-t border-brand-border">
           <div className="flex flex-col gap-2">
-            
+
             {/* Operator Info Card */}
-            <div className={`bg-slate-50 border border-brand-border rounded-[12px] transition-all duration-300 ease-in-out overflow-hidden ${
-              isSidebarExpanded ? "p-3 opacity-100 max-h-[80px]" : "p-0 opacity-0 max-h-0 border-none"
-            }`}>
+            <div className={`bg-slate-50 border border-brand-border rounded-[12px] transition-all duration-300 ease-in-out overflow-hidden ${isSidebarExpanded ? "p-3 opacity-100 max-h-[80px]" : "p-0 opacity-0 max-h-0 border-none"
+              }`}>
               <div className="flex items-center gap-2 whitespace-nowrap">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
                 <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider truncate">
@@ -487,7 +450,7 @@ function App() {
             </div>
 
             {/* Logout Button */}
-            <button 
+            <button
               onClick={handleLogout}
               className={`w-full flex items-center pl-[14px] py-3 rounded-[12px] font-bold text-xs transition-all duration-300 ease-in-out text-rose-500 hover:bg-rose-50`}
               title="Keluar"
@@ -495,9 +458,8 @@ function App() {
               <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isSidebarExpanded ? "opacity-100 max-w-[100px] ml-3" : "opacity-0 max-w-0 ml-0"
-              }`}>
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${isSidebarExpanded ? "opacity-100 max-w-[100px] ml-3" : "opacity-0 max-w-0 ml-0"
+                }`}>
                 Keluar
               </span>
             </button>
@@ -509,7 +471,7 @@ function App() {
 
       {/* 2. MAIN SCROLLABLE DASHBOARD CONTENT AREA */}
       <main className="flex-1 h-full overflow-y-auto p-6 md:p-8">
-        
+
         {/* Loading state if fetching API */}
         {loading && !sawData ? (
           <div className="flex flex-col items-center justify-center h-full space-y-4">
@@ -518,7 +480,7 @@ function App() {
           </div>
         ) : (
           <div className="space-y-8 animate-fade-in-up animate-gpu">
-            
+
             {/* Top stats section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
@@ -561,11 +523,11 @@ function App() {
 
             {/* TAB CONTENTS CONTAINER (Style ProCleaning: Large rounded corners rounded-[20px]) */}
             <div className="bg-white border border-brand-border rounded-[20px] p-6 md:p-8 shadow-sm min-h-[400px]">
-              
+
               {/* TAB 1: RANKING TABLE */}
               {activeTab === "ranking" && (
                 <div className="space-y-6">
-                  
+
                   {/* Search, Filter, Sort (Style ProCleaning: clean slate light backgrounds) */}
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-50 border border-brand-border p-5 rounded-[16px]">
                     <div>
@@ -576,7 +538,7 @@ function App() {
                       {/* Sort Dropdown */}
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-bold text-slate-400 uppercase">Urutkan:</span>
-                        <select 
+                        <select
                           value={sortBy}
                           onChange={(e) => setSortBy(e.target.value)}
                           className="border border-slate-200 bg-white px-2 py-1.5 rounded-lg text-xs focus:outline-none focus:border-brand-primary font-bold text-slate-800"
@@ -590,8 +552,8 @@ function App() {
                       </div>
 
                       {/* Search Input */}
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Cari model laptop/merek..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -626,7 +588,7 @@ function App() {
                               <td className="p-3.5 text-center font-bold text-brand-primary">{item.v_i.toFixed(4)}</td>
                               <td className="p-3.5 text-center">
                                 {item.keterangan === "SANGAT LAYAK" && (
-                                  <button 
+                                  <button
                                     onClick={() => setJustificationModal({ open: true, laptop: item })}
                                     className="bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1 mx-auto shadow-sm"
                                   >
@@ -637,7 +599,7 @@ function App() {
                                   </button>
                                 )}
                                 {item.keterangan === "CUKUP LAYAK" && (
-                                  <button 
+                                  <button
                                     onClick={() => setJustificationModal({ open: true, laptop: item })}
                                     className="bg-amber-50 hover:bg-amber-100 border border-amber-100 text-amber-700 font-bold px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1 mx-auto shadow-sm"
                                   >
@@ -648,7 +610,7 @@ function App() {
                                   </button>
                                 )}
                                 {item.keterangan === "KURANG LAYAK" && (
-                                  <button 
+                                  <button
                                     onClick={() => setJustificationModal({ open: true, laptop: item })}
                                     className="bg-rose-50 hover:bg-rose-100 border border-rose-100 text-rose-700 font-bold px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1 mx-auto shadow-sm"
                                   >
@@ -695,12 +657,12 @@ function App() {
                               {c.type}
                             </span>
                           </div>
-                          
+
                           <div className="flex items-center gap-4">
-                            <input 
-                              type="range" 
-                              min="0" 
-                              max="1" 
+                            <input
+                              type="range"
+                              min="0"
+                              max="1"
                               step="0.05"
                               value={tempWeights[c.kode] ?? c.weight}
                               onChange={(e) => handleTempWeightChange(c.kode, e.target.value)}
@@ -718,22 +680,21 @@ function App() {
                       <div className="space-y-4">
                         <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Informasi Kriteria (Kepmendag No. 2060/2025)</h4>
                         <ul className="text-[11px] text-slate-500 space-y-2.5 list-disc list-inside leading-relaxed">
-                          <li><strong>C1 (TKDN + BMP)</strong>: Minimal 25% TKDN dan 40% BMP. Atribut benefit (bobot 30%).</li>
-                          <li><strong>C2 (Kapasitas RAM)</strong>: Spesifikasi minimal 8 GB. Atribut benefit (bobot 25%).</li>
-                          <li><strong>C3 (Kapasitas SSD)</strong>: Spesifikasi minimal 256 GB. Atribut benefit (bobot 20%).</li>
-                          <li><strong>C4 (Masa Garansi)</strong>: Masa garansi minimal 1 tahun. Atribut benefit (bobot 15%).</li>
-                          <li><strong>C5 (Harga Satuan)</strong>: Efisiensi anggaran. Atribut cost (bobot 10%).</li>
+                          <li><strong>C1 (TKDN + BMP)</strong>: Minimal 40% TKDN + BMP. Atribut benefit.</li>
+                          <li><strong>C2 (Kapasitas RAM)</strong>: Spesifikasi minimal 8 GB. Atribut benefit.</li>
+                          <li><strong>C3 (Kapasitas SSD)</strong>: Spesifikasi minimal 256 GB. Atribut benefit.</li>
+                          <li><strong>C4 (Masa Garansi)</strong>: Masa garansi minimal 1 tahun. Atribut benefit.</li>
+                          <li><strong>C5 (Harga Satuan)</strong>: Efisiensi anggaran. Atribut cost.</li>
                         </ul>
                       </div>
-                      
+
                       <div className="pt-4 border-t border-brand-border space-y-4">
                         <div className="flex justify-between text-xs font-bold items-center">
                           <span>Total Kontribusi Bobot:</span>
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-black ${
-                            tempTotalPercentage === 100 
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
-                              : "bg-rose-50 text-rose-700 border border-rose-100 animate-pulse"
-                          }`}>
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-black ${tempTotalPercentage === 100
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                            : "bg-rose-50 text-rose-700 border border-rose-100 animate-pulse"
+                            }`}>
                             {tempTotalPercentage}%
                           </span>
                         </div>
@@ -776,16 +737,15 @@ function App() {
                           >
                             Batal
                           </button>
-                          
+
                           <button
                             type="button"
                             onClick={saveWeights}
                             disabled={tempTotalPercentage !== 100 || loading}
-                            className={`flex-1 text-xs font-bold py-2.5 rounded-lg shadow-sm transition-all text-white ${
-                              tempTotalPercentage === 100 && !loading
-                                ? "bg-brand-primary hover:bg-brand-primary-hover cursor-pointer"
-                                : "bg-slate-300 cursor-not-allowed opacity-60"
-                            }`}
+                            className={`flex-1 text-xs font-bold py-2.5 rounded-lg shadow-sm transition-all text-white ${tempTotalPercentage === 100 && !loading
+                              ? "bg-brand-primary hover:bg-brand-primary-hover cursor-pointer"
+                              : "bg-slate-300 cursor-not-allowed opacity-60"
+                              }`}
                           >
                             {loading ? "Menyimpan..." : "Simpan Bobot"}
                           </button>
@@ -804,7 +764,7 @@ function App() {
                       <h3 className="text-sm font-bold text-slate-900">Kelola Alternatif Laptop</h3>
                       <p className="text-xs text-slate-500 mt-0.5">Tambah, ubah, atau hapus alternatif laptop yang dievaluasi.</p>
                     </div>
-                    <button 
+                    <button
                       onClick={openCreateModal}
                       className="bg-brand-primary hover:bg-brand-primary-hover text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm transition-colors"
                     >
@@ -839,13 +799,13 @@ function App() {
                             <td className="p-3.5 text-center font-medium">{alt.c4_warranty} Thn</td>
                             <td className="p-3.5 text-right font-mono font-bold text-slate-500">{formatRupiah(alt.c5_price)}</td>
                             <td className="p-3.5 text-center flex justify-center gap-1.5">
-                              <button 
+                              <button
                                 onClick={() => openEditModal(alt)}
                                 className="border border-brand-primary text-brand-primary hover:bg-slate-50 text-[10px] font-bold px-2 py-1 rounded transition-colors"
                               >
                                 Edit
                               </button>
-                              <button 
+                              <button
                                 onClick={() => handleLaptopDelete(alt.id, alt.name)}
                                 className="border border-rose-200 text-rose-500 hover:bg-rose-50 text-[10px] font-bold px-2 py-1 rounded transition-colors"
                               >
@@ -860,338 +820,6 @@ function App() {
                 </div>
               )}
 
-              {/* TAB 4: STEP-BY-STEP SAW MATRICES */}
-              {activeTab === "saw-steps" && (
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">Langkah Perhitungan SAW</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">Penelusuran transparan dari data mentah hingga keputusan akhir.</p>
-                  </div>
-
-                  {/* Tabel Aturan Konversi Keanggotaan Fuzzy Setiap Kriteria */}
-                  <div className="space-y-4">
-                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                      Aturan Konversi Keanggotaan Fuzzy Setiap Kriteria
-                    </h4>
-                    <p className="text-[11px] text-slate-500">
-                      Klasifikasi dan konversi nilai riil kriteria laptop ke dalam skala fuzzy [0.25, 0.33, 0.50, 0.67, 0.75, 1.00] sesuai standar regulasi dan preferensi.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      
-                      {/* C1 - TKDN */}
-                      <div className="bg-white border border-brand-border rounded-[16px] overflow-hidden shadow-sm flex flex-col">
-                        <div className="bg-emerald-500 text-white text-[10px] font-bold py-2 px-3 uppercase tracking-wider text-center">
-                          C1 - Nilai TKDN + BMP (%) [BENEFIT]
-                        </div>
-                        <div className="p-3.5 flex-1">
-                          <table className="w-full text-left text-[11px] border-collapse">
-                            <thead>
-                              <tr className="border-b border-brand-border text-slate-400 font-bold">
-                                <th className="pb-2 w-8 text-center">No</th>
-                                <th className="pb-2">Batas Nilai TKDN + BMP</th>
-                                <th className="pb-2 text-center w-20">Nilai Fuzzy</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-brand-border text-slate-700 font-medium">
-                              <tr>
-                                <td className="py-2 text-center font-bold">1</td>
-                                <td className="py-2">TKDN &lt; 45%</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,25</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">2</td>
-                                <td className="py-2">45% &le; TKDN &lt; 50%</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,50</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">3</td>
-                                <td className="py-2">50% &le; TKDN &lt; 55%</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,75</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">4</td>
-                                <td className="py-2">TKDN &ge; 55%</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">1,00</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      {/* C2 - RAM */}
-                      <div className="bg-white border border-brand-border rounded-[16px] overflow-hidden shadow-sm flex flex-col">
-                        <div className="bg-emerald-500 text-white text-[10px] font-bold py-2 px-3 uppercase tracking-wider text-center">
-                          C2 - Kapasitas RAM (GB) [BENEFIT]
-                        </div>
-                        <div className="p-3.5 flex-1">
-                          <table className="w-full text-left text-[11px] border-collapse">
-                            <thead>
-                              <tr className="border-b border-brand-border text-slate-400 font-bold">
-                                <th className="pb-2 w-8 text-center">No</th>
-                                <th className="pb-2">Kapasitas RAM</th>
-                                <th className="pb-2 text-center w-20">Nilai Fuzzy</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-brand-border text-slate-700 font-medium">
-                              <tr>
-                                <td className="py-2 text-center font-bold">1</td>
-                                <td className="py-2">RAM = 8 GB</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,25</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">2</td>
-                                <td className="py-2">RAM = 16 GB</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,50</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">3</td>
-                                <td className="py-2">RAM = 32 GB</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,75</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">4</td>
-                                <td className="py-2">RAM &gt; 32 GB</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">1,00</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      {/* C3 - SSD */}
-                      <div className="bg-white border border-brand-border rounded-[16px] overflow-hidden shadow-sm flex flex-col">
-                        <div className="bg-emerald-500 text-white text-[10px] font-bold py-2 px-3 uppercase tracking-wider text-center">
-                          C3 - Kapasitas SSD (GB) [BENEFIT]
-                        </div>
-                        <div className="p-3.5 flex-1">
-                          <table className="w-full text-left text-[11px] border-collapse">
-                            <thead>
-                              <tr className="border-b border-brand-border text-slate-400 font-bold">
-                                <th className="pb-2 w-8 text-center">No</th>
-                                <th className="pb-2">Kapasitas SSD</th>
-                                <th className="pb-2 text-center w-20">Nilai Fuzzy</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-brand-border text-slate-700 font-medium">
-                              <tr>
-                                <td className="py-2 text-center font-bold">1</td>
-                                <td className="py-2">SSD = 256 GB</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,33</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">2</td>
-                                <td className="py-2">SSD = 512 GB</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,67</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">3</td>
-                                <td className="py-2">SSD &ge; 1024 GB (1 TB)</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">1,00</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      {/* C4 - Garansi */}
-                      <div className="bg-white border border-brand-border rounded-[16px] overflow-hidden shadow-sm flex flex-col">
-                        <div className="bg-emerald-500 text-white text-[10px] font-bold py-2 px-3 uppercase tracking-wider text-center">
-                          C4 - Masa Garansi (Tahun) [BENEFIT]
-                        </div>
-                        <div className="p-3.5 flex-1">
-                          <table className="w-full text-left text-[11px] border-collapse">
-                            <thead>
-                              <tr className="border-b border-brand-border text-slate-400 font-bold">
-                                <th className="pb-2 w-8 text-center">No</th>
-                                <th className="pb-2">Masa Garansi</th>
-                                <th className="pb-2 text-center w-20">Nilai Fuzzy</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-brand-border text-slate-700 font-medium">
-                              <tr>
-                                <td className="py-2 text-center font-bold">1</td>
-                                <td className="py-2">Garansi = 1 Tahun</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,25</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">2</td>
-                                <td className="py-2">Garansi = 2 Tahun</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,50</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">3</td>
-                                <td className="py-2">Garansi = 3 Tahun</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,75</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">4</td>
-                                <td className="py-2">Garansi &gt; 3 Tahun</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">1,00</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      {/* C5 - Harga */}
-                      <div className="bg-white border border-brand-border rounded-[16px] overflow-hidden shadow-sm flex flex-col">
-                        <div className="bg-amber-500 text-white text-[10px] font-bold py-2 px-3 uppercase tracking-wider text-center">
-                          C5 - Harga Satuan (Rp) [COST]
-                        </div>
-                        <div className="p-3.5 flex-1">
-                          <table className="w-full text-left text-[11px] border-collapse">
-                            <thead>
-                              <tr className="border-b border-brand-border text-slate-400 font-bold">
-                                <th className="pb-2 w-8 text-center">No</th>
-                                <th className="pb-2">Batas Harga Satuan</th>
-                                <th className="pb-2 text-center w-20">Nilai Fuzzy</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-brand-border text-slate-700 font-medium">
-                              <tr>
-                                <td className="py-2 text-center font-bold">1</td>
-                                <td className="py-2">Harga &le; Rp 11.000.000</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,25</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">2</td>
-                                <td className="py-2">Rp 11 jt &lt; Harga &le; Rp 14 jt</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,50</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">3</td>
-                                <td className="py-2">Rp 14 jt &lt; Harga &le; Rp 17 jt</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">0,75</td>
-                              </tr>
-                              <tr>
-                                <td className="py-2 text-center font-bold">4</td>
-                                <td className="py-2">Harga &gt; Rp 17.000.000</td>
-                                <td className="py-2 text-center font-bold text-brand-primary">1,00</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {sawData && (
-                    <div className="space-y-8">
-
-                      {/* Pagination Control */}
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50 border border-brand-border rounded-[16px] p-4 shadow-sm">
-                        <div className="text-xs text-slate-500 font-semibold">
-                          Menampilkan baris <span className="font-bold text-slate-800">{((currentSawPage - 1) * itemsPerPage) + 1}</span> - <span className="font-bold text-slate-800">{Math.min(currentSawPage * itemsPerPage, sawData.fuzzy_matrix.length)}</span> dari <span className="font-bold text-slate-800">{sawData.fuzzy_matrix.length}</span> laptop
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => setSawPage(prev => Math.max(prev - 1, 1))}
-                            disabled={currentSawPage === 1}
-                            className="px-3 py-1.5 rounded-lg border border-brand-border bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                          >
-                            Sebelumnya
-                          </button>
-                          <div className="flex items-center gap-1">
-                            {Array.from({ length: totalSawPages }, (_, i) => i + 1).map((p) => (
-                              <button
-                                key={p}
-                                onClick={() => setSawPage(p)}
-                                className={`w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-bold transition-all ${
-                                  currentSawPage === p
-                                    ? "bg-brand-primary text-white shadow-sm"
-                                    : "border border-brand-border bg-white text-slate-600 hover:bg-slate-50"
-                                }`}
-                              >
-                                {p}
-                              </button>
-                            ))}
-                          </div>
-                          <button
-                            onClick={() => setSawPage(prev => Math.min(prev + 1, totalSawPages))}
-                            disabled={currentSawPage === totalSawPages}
-                            className="px-3 py-1.5 rounded-lg border border-brand-border bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                          >
-                            Selanjutnya
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Step 1: Fuzzy Matrix */}
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Langkah 1: Matriks Keanggotaan Fuzzy (f_ij)</h4>
-                        </div>
-                        <p className="text-[11px] text-slate-500">Konversi nilai real laptop ke fuzzy [0.25, 0.50, 0.75, 1.00] sesuai kriteria keanggotaan.</p>
-                        <div className="overflow-x-auto border border-brand-border rounded-[16px]">
-                          <table className="w-full text-left border-collapse text-[11px] table-fixed">
-                            <thead>
-                              <tr className="bg-slate-50 border-b border-brand-border text-slate-700 font-bold">
-                                <th className="p-2.5 w-16 text-center">KODE</th>
-                                <th className="p-2.5 w-48">NAMA LAPTOP</th>
-                                <th className="p-2.5 text-center">f_C1</th>
-                                <th className="p-2.5 text-center">f_C2</th>
-                                <th className="p-2.5 text-center">f_C3</th>
-                                <th className="p-2.5 text-center">f_C4</th>
-                                <th className="p-2.5 text-center">f_C5</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-brand-border">
-                              {paginatedFuzzyMatrix.map((row) => (
-                                <tr key={row.kode} className="hover:bg-slate-50/50">
-                                  <td className="p-2.5 text-center font-mono font-semibold text-slate-400">{row.kode}</td>
-                                  <td className="p-2.5 font-medium truncate text-slate-900">{row.name}</td>
-                                  <td className="p-2.5 text-center font-semibold text-brand-primary">{row.f_c1.toFixed(2)}</td>
-                                  <td className="p-2.5 text-center font-semibold text-brand-primary">{row.f_c2.toFixed(2)}</td>
-                                  <td className="p-2.5 text-center font-semibold text-brand-primary">{row.f_c3.toFixed(2)}</td>
-                                  <td className="p-2.5 text-center font-semibold text-brand-primary">{row.f_c4.toFixed(2)}</td>
-                                  <td className="p-2.5 text-center font-semibold text-brand-primary">{row.f_c5.toFixed(2)}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      {/* Step 2: Normalized Matrix */}
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Langkah 2: Matriks Normalisasi (R)</h4>
-                        </div>
-                        <p className="text-[11px] text-slate-500">Normalisasi: Benefit = f_ij / max(f_j) [C1-C4] | Cost = min(f_j) / f_ij [C5].</p>
-                        <div className="overflow-x-auto border border-brand-border rounded-[16px]">
-                          <table className="w-full text-left border-collapse text-[11px] table-fixed">
-                            <thead>
-                              <tr className="bg-slate-50 border-b border-brand-border text-slate-700 font-bold">
-                                <th className="p-2.5 w-16 text-center">KODE</th>
-                                <th className="p-2.5 w-48">NAMA LAPTOP</th>
-                                <th className="p-2.5 text-center">r_C1</th>
-                                <th className="p-2.5 text-center">r_C2</th>
-                                <th className="p-2.5 text-center">r_C3</th>
-                                <th className="p-2.5 text-center">r_C4</th>
-                                <th className="p-2.5 text-center">r_C5</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-brand-border">
-                              {paginatedNormalizedMatrix.map((row) => (
-                                <tr key={row.kode} className="hover:bg-slate-50/50">
-                                  <td className="p-2.5 text-center font-mono font-semibold text-slate-400">{row.kode}</td>
-                                  <td className="p-2.5 font-medium truncate text-slate-900">{row.name}</td>
-                                  <td className="p-2.5 text-center font-semibold text-brand-primary">{row.r_c1.toFixed(4)}</td>
-                                  <td className="p-2.5 text-center font-semibold text-brand-primary">{row.r_c2.toFixed(4)}</td>
-                                  <td className="p-2.5 text-center font-semibold text-brand-primary">{row.r_c3.toFixed(4)}</td>
-                                  <td className="p-2.5 text-center font-semibold text-brand-primary">{row.r_c4.toFixed(4)}</td>
-                                  <td className="p-2.5 text-center font-semibold text-brand-primary">{row.r_c5.toFixed(4)}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
 
             </div>
           </div>
@@ -1200,7 +828,7 @@ function App() {
       </main>
 
       {/* MODAL CRUD LAPTOP */}
-      <LaptopFormModal 
+      <LaptopFormModal
         isOpen={isCrudModalOpen}
         onClose={() => setIsCrudModalOpen(false)}
         onSubmit={handleLaptopSubmit}
@@ -1213,14 +841,14 @@ function App() {
       {justificationModal.open && justificationModal.laptop && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fade-in">
           {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={() => setJustificationModal({ open: false, laptop: null })}
           />
-          
+
           {/* Modal Container */}
           <div className="bg-white rounded-[24px] border border-slate-100 shadow-2xl w-full max-w-md overflow-hidden relative z-10 transform scale-100 transition-all p-6 md:p-8">
-            
+
             {/* Header */}
             <div className="flex justify-between items-start mb-6">
               <div>
@@ -1234,7 +862,7 @@ function App() {
                   Merek: {justificationModal.laptop.brand}
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => setJustificationModal({ open: false, laptop: null })}
                 className="text-slate-400 hover:text-slate-600 transition-colors p-1 bg-slate-50 rounded-full"
               >
@@ -1243,7 +871,7 @@ function App() {
                 </svg>
               </button>
             </div>
-            
+
             {/* Content Body */}
             <div className="space-y-5">
               {/* Score and Rank */}
